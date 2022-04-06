@@ -1,5 +1,3 @@
-import math as m
-
 def raiz(n):
   return(n**(1/2))
 
@@ -13,7 +11,8 @@ if str.isnumeric(n):
     def fibonacci(n):
       return ((1/raiz(5))*(x**n-y**n))
 
-    f = m.trunc(fibonacci(n))
+    import math
+    f = math.trunc(fibonacci(n))
     print("En la posicion", n,"de la sucecion de Fibonacci el numero es",f) 
 
 else:
