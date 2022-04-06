@@ -1,4 +1,3 @@
-import numpy as n
 import math as m
 
 def raiz(n):
