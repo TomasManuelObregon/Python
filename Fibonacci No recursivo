@@ -1,19 +1,17 @@
-def raiz(n):
-  return(n**(1/2))
-
-x = ((1+raiz(5))/2)
-y = ((1-raiz(5))/2)
-
 n = input("Ingrese numero entero: ")
 
 if str.isnumeric(n):
-    n = int(n)
-    def fibonacci(n):
-      return ((1/raiz(5))*(x**n-y**n))
+    def raiz(x):
+        return(x**(1/2))
 
+    x = ((1+raiz(5))/2)
+    y = ((1-raiz(5))/2)
+    n = int(n)
+
+    def fibonacci(n):
+        return ((1/raiz(5))*(x**n-y**n))
     import math
     f = math.trunc(fibonacci(n))
-    print("En la posicion", n,"de la sucecion de Fibonacci el numero es",f) 
-
+    print("En la posicion", n,"de la sucecion de Fibonacci el numero es",f)
 else:
     print("Lo que ingresaste no es un numero entero")
