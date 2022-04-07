@@ -1,0 +1,23 @@
+n = int(input("¿Hasta que valor quiere buscar numeros primos?: "))
+m = int(input("¿Desde donde quiere empezar a buscar?: "))
+def div(x):
+  if x == 1 or x == 2  or x == 3 or x == 5 or x == 7:
+    return(False)
+  if x % 2 == 0 or x % 3 == 0 or x % 5 == 0 or x % 7 == 0: 
+    return(True)
+  else: 
+    return(False)
+
+primos = []
+noprimos = []
+
+for i in range(1,n+1):
+  if i >= m:
+    if div(i) == True:
+      noprimos.append(i)
+    if div(i) == False:
+      primos.append(i)
+
+print("De", m ,"a",n,"hay", len(primos), "numeros Primos y", len(noprimos), "numeros No Primos")
+print("Numeros Primos:", primos)
+print("Numeros No Primos:", noprimos)
