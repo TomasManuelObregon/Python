@@ -26,7 +26,7 @@ while n < N:
   R.append(R[-1]+ (𝛽*I[-1])*h)
   t.append(t[-1]+h)
 
-plt.plot(t,S, label='Suseptibles')
+plt.plot(t,S, label='Suceptibles')
 plt.plot(t,I, label='Infectados')
 plt.plot(t,R, label='Recuperados')
 plt.legend()
