@@ -1,4 +1,6 @@
-n = input("Ingrese numero entero: ")
+import math
+
+n = input('Ingrese numero entero: ')
 
 if str.isnumeric(n):
     def raiz(x):
@@ -10,8 +12,7 @@ if str.isnumeric(n):
 
     def fibonacci(n):
         return ((1/raiz(5))*(x**n-y**n))
-    import math
     f = math.trunc(fibonacci(n))
-    print("En la posicion", n,"de la sucecion de Fibonacci el numero es",f)
+    print(f'En la posicion {n} de la sucecion de Fibonacci el numero es {f}')
 else:
-    print("Lo que ingresaste no es un numero entero")
+    print('Lo que ingresaste no es un numero entero')
