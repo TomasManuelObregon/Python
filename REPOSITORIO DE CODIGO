@@ -1,0 +1,40 @@
+# REPOSITORIO DE CODIGO PARA INTRUMENTALIZACION
+
+# - - - - - - - - CODIGO PARA EL GENERADOR - - - - - - - -
+gen.write('SOUR1:FUNC:SHAP SQU') Señal cuadrada
+gen.write('SOUR1:VOLT {vol}')    Cambair voltaje
+gen.write('SOUR1:FREQ {frec}')   # Cambair frecuencia
+
+# - - - - - - - - CODIGO PARA EL OSCILOSCOPIO - - - - - - - -
+osci.write('AUTOS exec')         # Autoset
+osci.write('CH1:POS {offs}')     # Cambiar offset del osci
+osci.write('CH1:SCA {sca_vol}')  # Cambiar escala de voltaje 
+
+# - - - - - - - - LEVANTAR MEDICIONES - - - - - - - - 
+
+# Leo la escala
+osci.write("DAT:SOU CH1")
+xze, xin = osci.query_ascii_values('WFMPRE:XZE?;XIN?', separator=';')                 # Eje temporal
+yze1, ymu1, yoff1 = osci.query_ascii_values('WFMPRE:YZE?;YMU?;YOFF?;', separator=';') # Eje vertical CH1
+osci.write("DAT:SOU CH2")
+yze2, ymu2, yoff2 = osci.query_ascii_values('WFMPRE:YZE?;YMU?;YOFF?;', separator=';') # Eje vertical CH2
+
+time.sleep({1})
+
+# Levanto los datos
+osci.write('ACQuire:STATE STOP')
+
+osci.write("DAT:SOU CH1")
+data1 = osci.query_binary_values('CURV?', datatype='B', container=np.array) # Tomo datos CH1
+osci.write("DAT:SOU CH2")
+data2 = osci.query_binary_values('CURV?', datatype='B', container=np.array) # Tomo datos CH2
+
+osci.write('ACQuire:STATE RUN')
+
+t   = xze + np.arange(len(data1)) * xin
+CH1 = np.array((data1 - yoff1) * ymu1 + yze1)
+CH2 = np.array((data2 - yoff2) * ymu2 + yze2)
+
+
+
+
