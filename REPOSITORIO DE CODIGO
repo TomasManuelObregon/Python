@@ -1,8 +1,8 @@
 # REPOSITORIO DE CODIGO PARA INTRUMENTALIZACION
 
 # - - - - - - - - CODIGO PARA EL GENERADOR - - - - - - - -
-gen.write('SOUR1:FUNC:SHAP SQU') Señal cuadrada
-gen.write('SOUR1:VOLT {vol}')    Cambair voltaje
+gen.write('SOUR1:FUNC:SHAP SQU') # Señal cuadrada
+gen.write('SOUR1:VOLT {vol}')    # Cambair voltaje
 gen.write('SOUR1:FREQ {frec}')   # Cambair frecuencia
 
 # - - - - - - - - CODIGO PARA EL OSCILOSCOPIO - - - - - - - -
