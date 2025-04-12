@@ -4,6 +4,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 from matplotlib import font_manager
 from scipy.signal import fftconvolve
 import cv2
@@ -107,7 +108,13 @@ def autocorr(file_name, ti, step, tf, grafico):
         
         t = ti + ((i+1) * step) # Actualizo el tiempo para que lo pueda comparar con el tiempo final
         i += 1                  # Actualizo el i para seguir iterando
-        
+    
+    # Guardar mapa de autocorrelación en CSV
+    pd.DataFrame({
+        'x': np.tile(np.arange(corr.shape[1]), corr.shape[0]),
+        'y': np.repeat(np.arange(corr.shape[0]), corr.shape[1]),
+        'intensidad': corr.ravel()
+    }).to_csv(f'/Users/tomas/Desktop/{grafico}_autocorrelacion.csv', index=False)
         
     mov_x = [abs(i) for i in mov_x]    
     mov_y = [abs(i) for i in mov_y]    
@@ -116,7 +123,7 @@ def autocorr(file_name, ti, step, tf, grafico):
     duty_cycle_vuelta = [round(i*0.05, 2)*100 for i in range(len(mov_x)//2)][::-1] # Vuelta
 
     plt.close('all')
-    fig, axs = plt.subplots(2, 1, figsize=(6, 12))
+    fig, axs = plt.subplots(2, 1, figsize=(6, 9))
     fig.subplots_adjust(left=0.18,
                        right=0.96,
                        bottom=0.09,
@@ -145,9 +152,7 @@ def autocorr(file_name, ti, step, tf, grafico):
     axs[1].tick_params(axis='both', labelsize=15)
     
     plt.show()
-    plt.savefig(f'/Users/tomas/Desktop/{grafico}.png', bbox_inches='tight')
-    
-    
+    # plt.savefig(f'/Users/tomas/Desktop/{grafico}.png', bbox_inches='tight')
     
     
     fig, axs = plt.subplots(3, 1, figsize=(5, 10))
@@ -168,14 +173,8 @@ def autocorr(file_name, ti, step, tf, grafico):
     axs[2].imshow(corr)
     axs[2].axvline(x0, linestyle='--', c='r', alpha=.5)
     axs[2].axvline(x_max, linestyle='--', c='r', alpha=.5)
-    print(dx)
     # plt.savefig(f'/Users/tomas/Desktop/{grafico}_imagenes.png', bbox_inches='tight')
 
 #%%
 
-autocorr('WIN_20250407_13_29_49_Pro.mp4', 0, 4, 156, 'eje_X')
-
-    
-
-
-
+autocorr('WIN_20250407_13_29_49_Pro.mp4', 0, 4, 20, 'eje_Y')
