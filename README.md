@@ -8,3 +8,5 @@ En este repositorio se encuentran los códigos que ire creando para Laboratorio 
   
 - Labo6_09-04.py:
     En él recortamos y promediamos segmentos de video, creando una imagen. Luego las comparamos entre ellas usando autocorrelación.
+- Labo6_16-04.py y Labo6_16-04_poly4.py:
+    En ellos intentamos ajustar el máximo del mapa de un autocorrelación por un paraboloide, una gaussiana, una lorentziana y un polinomio de grado 4.
