@@ -8,8 +8,12 @@ En este repositorio se encuentran los códigos que ire creando para Laboratorio 
   
 - Labo6_09-04.py:
     En él recortamos y promediamos segmentos de video, creando una imagen. Luego las comparamos entre ellas usando autocorrelación.
+  
 - Labo6_16-04.py y Labo6_16-04_poly4.py:
     En ellos intentamos ajustar el máximo del mapa de un autocorrelación por un paraboloide, una gaussiana, una lorentziana y un polinomio de grado 4.
   
 - Labo6_21-04.py:
     En él se ajusta la mascara del mapa de autocorrelación con una gaussiana rotada (con mucho exito).
+
+- class_Video.py:
+    En este archivo se crea la clase Video cuyos metodos reunen todas las funciones que usamos para manipular videos durante el cuatrimestre. Ademas, la usamos para crear el gráfico de histeresis "mejorado".
