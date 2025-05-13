@@ -17,3 +17,6 @@ En este repositorio se encuentran los códigos que ire creando para Laboratorio 
 
 - class_Video.py:
     En este archivo se crea la clase Video cuyos metodos reunen todas las funciones que usamos para manipular videos durante el cuatrimestre. Ademas, la usamos para crear el gráfico de histeresis "mejorado".
+
+- Labo6_28-04_ruido.py:
+    En este archivo se analizan las señales de salida del amplificador, verificando el nivel de ruido en el rango de 0 a 1kHz. (Es medio rudimentario)
