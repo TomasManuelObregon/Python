@@ -8,7 +8,7 @@ from scipy import optimize as op
 from scipy.signal import fftconvolve
 import cv2
 import os
-import time
+import pandas as pd
 
 # Modelo de ajuste 
 def true_gaussian(dom, amp, ux, uy, a, b, c, offs):
@@ -98,44 +98,49 @@ class Video:
     def show_frames(self):
         index = 0
         paused = False
+        running = True  # bandera para cortar el loop de forma controlada
     
-        while True:
+        while running:
             if not paused:
                 frame = self.frames[index]
                 cv2.imshow('Video', frame)
                 key = cv2.waitKey(int(1000 / self.fps)) & 0xFF
             else:
-                key = cv2.waitKey(0) & 0xFF  # Espera indefinida en pausa
+                key = cv2.waitKey(0) & 0xFF  # Espera indefinida
     
-            if key == ord('q'):
-                break
+            # Lógica de control
+            if key == ord('q') or key == 27:  # 'q' o ESC
+                running = False
             elif key == ord('p'):
-                paused = not paused  # Pausar o reanudar
-            elif key == ord(','):  # '<' retrocede 10
+                paused = not paused
+            elif key == ord(','):
                 index = max(0, index - 10)
-            elif key == ord('.'):  # '>' avanza 10
+            elif key == ord('.'):
                 index = min(len(self.frames) - 1, index + 10)
             elif not paused:
                 index += 1
     
-            # Repetir si llega al final
             if index >= len(self.frames):
                 index = 0
     
+        # Cierre seguro
         cv2.destroyAllWindows()
+        cv2.waitKey(1)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     
-    def create_background(self, ti_bg, tf_bg):
+    def create_background(self, ti_bg, tf_bg, plot=False):
         self.ti_bg, self.tf_bg = ti_bg, tf_bg
         
         self.create_video(ti_bg, tf_bg)
         self.average()
+        if plot:
+            self.show_average_frame()
         self.background = self.mean_frame
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-    def autocorr(self, mask, plot):
+    def autocorr(self, mask, plot=False):
         self.mask=mask
         
         # Autocorrelacion
@@ -202,7 +207,7 @@ class Video:
                    
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-    def fit(self, plot=True):
+    def fit(self, plot=False):
         x_flat = self.x_mask.ravel()
         y_flat = self.y_mask.ravel()
         z_flat = self.z_mask.ravel()
@@ -310,28 +315,41 @@ class Video:
             
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         
-    def hysteresis(self, iterations):
+    def hysteresis(self, mask):
+        # Centro
+        self.autocorr(mask)
+        self.fit()
+        y0, x0 = self.uy, self.ux        
+
+        # iteraciones 
         ti = self.tf_bg + 1
         tf = ti + 3
         
-        # Centro
-        y0, x0 = 1080//2, 1920//2
-   
-        
         mov_x = [0]
         mov_y = [0] 
-        err_mov_x = [0]
-        err_mov_y = [0] 
+        err_mov_x = [self.err_ux]
+        err_mov_y = [self.err_ux] 
         
-        for i in range(iterations):
-            video.create_video(ti, tf)  
-            video.average()
-            video.autocorr(5, False)
-            video.fit(False)
+        xmax, ymax = [0], [0]
+        
+        autocorr_maps = []
+        
+        for i in range(40):
+            self.create_video(ti, tf)  
+            self.average()
+            self.autocorr(mask)
+            self.fit(True)
             
             dx = abs(self.ux - x0)
             dy = abs(self.uy - y0)
             
+            deltax = abs(self.x_max - x0)
+            deltay = abs(self.y_max - y0)            
+            xmax.append(deltax)
+            ymax.append(deltay)
+        
+            
+            autocorr_maps.append(self.corr)
             mov_x.append(dx)
             mov_y.append(dy)
             err_mov_x.append(self.err_ux)
@@ -339,10 +357,28 @@ class Video:
             
             ti = tf + 1
             tf = ti + 3
-                
-        duty_cycle_ida = [round(i*0.05, 2)*100 for i in range(len(mov_x)//2)]          # Ida
-        duty_cycle_vuelta = [round(i*0.05, 2)*100 for i in range(len(mov_x)//2)][::-1] # Vuelta
+            
+            
+        duty_cycle_ida = np.arange(0, 105, 5)          # Ida
+        mov_x_ida = mov_x[ : len(mov_x)//2+1]
+        mov_y_ida = mov_y[ : len(mov_x)//2+1]
+        err_mov_x_ida = err_mov_x[ : len(mov_x)//2+1]
+        err_mov_y_ida = err_mov_y[ : len(mov_x)//2+1]
+
+        duty_cycle_vuelta = np.arange(95, -5, -5)      # Vuelta
+        mov_x_vuelta = mov_x[len(mov_x)//2+1 : ]
+        mov_y_vuelta = mov_y[len(mov_x)//2+1 : ]
+        err_mov_x_vuelta = err_mov_x[len(mov_x)//2+1 : ]
+        err_mov_y_vuelta = err_mov_y[len(mov_x)//2+1 : ]
         
+        
+        xmax_ida = xmax[ : len(mov_x)//2+1]
+        xmax_vuelta = xmax[len(mov_x)//2+1 : ]
+                
+        ymax_ida = ymax[ : len(mov_x)//2+1]
+        ymax_vuelta = ymax[len(mov_x)//2+1 : ]
+        
+        # - - - - - - - - - - - - - - - - - - - - - 
         
         plt.close('all')
         fig = plt.figure(figsize=(8, 8))
@@ -350,10 +386,10 @@ class Video:
         # AX1 - - - - 
         ax1 = fig.add_subplot(2,1,1)
 
-        ax1.errorbar(duty_cycle_ida, mov_x[:len(mov_x)//2], yerr=err_mov_x[:len(mov_x)//2],
+        ax1.errorbar(duty_cycle_ida, mov_x_ida, yerr=err_mov_x_ida,
                      capsize = 3, elinewidth=2, linewidth=0, marker='.', markersize=5, 
                      c="#A0522D", label='Ida')
-        ax1.errorbar(duty_cycle_vuelta, mov_x[len(mov_x)//2:], yerr=err_mov_x[len(mov_x)//2:],
+        ax1.errorbar(duty_cycle_vuelta, mov_x_vuelta, yerr=err_mov_x_vuelta,
                      capsize = 3, elinewidth=2, linewidth=0, marker='.', markersize=5, 
                      c="#FF4500", label='Vuelta')   
 
@@ -361,17 +397,17 @@ class Video:
         ax1.set_ylabel(r'Desplazamiento en $\hat{x}$', fontsize=15)
         ax1.set_xlabel('Duty Cycle [%]', fontsize=15)
         ax1.set_xticks([0, 25, 50, 75, 100])
-        ax1.set_yticks(np.arange(0,501,100))
+        # ax1.set_yticks(np.arange(0,501,100))
         ax1.tick_params(axis='both', labelsize=18)
         ax1.legend(fontsize=15, loc='lower right')
 
         # AX2 - - - - 
         ax2 = fig.add_subplot(2,1,2)
 
-        ax2.errorbar(duty_cycle_ida, mov_y[:len(mov_x)//2], yerr=err_mov_y[:len(mov_x)//2],
+        ax2.errorbar(duty_cycle_ida, mov_y_ida, yerr=err_mov_y_ida,
                      capsize = 3, elinewidth=2, linewidth=0, marker='.', markersize=5, 
                      c="#A0522D", label='Ida')
-        ax2.errorbar(duty_cycle_vuelta, mov_y[len(mov_x)//2:], yerr=err_mov_y[len(mov_x)//2:],
+        ax2.errorbar(duty_cycle_vuelta, mov_y_vuelta, yerr=err_mov_y_vuelta,
                      capsize = 3, elinewidth=2, linewidth=0, marker='.', markersize=5, 
                      c="#FF4500", label='Vuelta')   
 
@@ -379,22 +415,93 @@ class Video:
         ax2.set_ylabel(r'Desplazamiento en $\hat{y}$', fontsize=15)
         ax2.set_xlabel('Duty Cycle [%]', fontsize=15)
         ax2.set_xticks([0, 25, 50, 75, 100])
-        ax2.set_yticks(np.arange(0,7,2))
+        # ax2.set_yticks(np.arange(0,7,2))
         ax2.tick_params(axis='both', labelsize=18)
         ax2.legend(fontsize=15, loc='lower right')
         
-        self.hyst = [mov_x, mov_y, err_mov_x, err_mov_y]
+        fig.subplots_adjust(left=.125,
+						 bottom=.1,
+						 right=.95, 
+						 top=.95,
+						 wspace=0,
+						 hspace=.2)
+        
+        
+        fig = plt.figure(figsize=(8, 8))
+        # AX1 - - - - 
+        ax1 = fig.add_subplot(2,1,1)
+
+        ax1.errorbar(duty_cycle_ida, xmax_ida, yerr=np.full(len(duty_cycle_ida), 2),
+                     capsize = 3, elinewidth=2, linewidth=0, marker='.', markersize=5, 
+                     c="#A0522D", label='Ida')
+        ax1.errorbar(duty_cycle_vuelta, xmax_vuelta, yerr=np.full(len(duty_cycle_vuelta), 2),
+                     capsize = 3, elinewidth=2, linewidth=0, marker='.', markersize=5, 
+                     c="#FF4500", label='Vuelta')   
+
+        ax1.grid(linestyle=(0,(5, 3)), linewidth=1, alpha=.25)
+        ax1.set_ylabel(r'Desplazamiento en $\hat{x}$', fontsize=15)
+        ax1.set_xlabel('Duty Cycle [%]', fontsize=15)
+        ax1.set_xticks([0, 25, 50, 75, 100])
+        # ax1.set_yticks(np.arange(0,501,100))
+        ax1.tick_params(axis='both', labelsize=18)
+        ax1.legend(fontsize=15, loc='lower right')
+
+        # AX2 - - - - 
+        ax2 = fig.add_subplot(2,1,2)
+
+        ax2.errorbar(duty_cycle_ida, ymax_ida, yerr=np.full(len(duty_cycle_ida), 2),
+                     capsize = 3, elinewidth=2, linewidth=0, marker='.', markersize=5, 
+                     c="#A0522D", label='Ida')
+        ax2.errorbar(duty_cycle_vuelta, ymax_vuelta, yerr=np.full(len(duty_cycle_vuelta), 2),
+                     capsize = 3, elinewidth=2, linewidth=0, marker='.', markersize=5, 
+                     c="#FF4500", label='Vuelta')   
+
+        ax2.grid(linestyle=(0,(5, 3)), linewidth=1, alpha=.25)
+        ax2.set_ylabel(r'Desplazamiento en $\hat{y}$', fontsize=15)
+        ax2.set_xlabel('Duty Cycle [%]', fontsize=15)
+        ax2.set_xticks([0, 25, 50, 75, 100])
+        # ax2.set_yticks(np.arange(0,7,2))
+        ax2.tick_params(axis='both', labelsize=18)
+        ax2.legend(fontsize=15, loc='lower right')
+        
+        fig.subplots_adjust(left=.125,
+						 bottom=.1,
+						 right=.95, 
+						 top=.95,
+						 wspace=0,
+						 hspace=.2)
+        
+        self.hyst = [mov_x, mov_y, err_mov_x, err_mov_y, autocorr_maps]
         
         
         
         
         
 #%%
-file_name = 'WIN_20250407_13_29_49_Pro.mp4'
+file_name = 'Video_calibracion_final_y.mp4'
 path = os.path.expanduser("~/Downloads/"+file_name)
 
 video = Video(path, 'b')
-video.create_background(1,4)
 
-video.hysteresis(39)
+# Busco el Background
+# video.create_video(1, 4)
+# video.show_frames()
+
+
+video.create_background(11,14)
+
+# video.autocorr(5, True)
+video.hysteresis(8)
+
+
+
     
+#%%
+# df = pd.DataFrame({
+#         'mov_x': video.hyst[0],
+#         'mov_y': video.hyst[1],
+#         'err_mov_x': video.hyst[2],
+#         'err_mov_y': video.hyst[3]
+#        })
+# df.to_csv('histeresis.csv', index=False)
+
