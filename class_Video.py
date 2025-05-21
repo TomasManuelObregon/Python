@@ -493,8 +493,6 @@ video.create_background(11,14)
 # video.autocorr(5, True)
 video.hysteresis(8)
 
-
-
     
 #%%
 # df = pd.DataFrame({
