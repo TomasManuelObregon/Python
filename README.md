@@ -22,7 +22,7 @@ En este repositorio se encuentran los códigos que ire creando para Laboratorio 
     En este archivo se analizan las señales de salida del amplificador, verificando el nivel de ruido en el rango de 0 a 1kHz. (Es medio rudimentario)
 
 - class_Desplazador.py:
-    En este archivo se define la clase Desplazador, que permite controlar un desplazador piezoeléctrico en tres ejes (X, Y, Z) utilizando una ESP32. La clase genera señales PWM para mover la plataforma, incluye funciones para centrar posiciones, realizar barridos automáticos y medir desplazamientos mediante un contador de pulsos.
+    En este archivo se define la clase Desplazador, adaptada para MicroPython, que permite controlar un desplazador piezoeléctrico en tres ejes (X, Y, Z) utilizando una ESP32. La clase genera señales PWM para mover la plataforma, incluye funciones para centrar posiciones, realizar barridos automáticos y adquirir la señal de un PMT a partir de un contador de pulsos.
 
 - Newton_Raphson.py:
-    En este archivo se implementa el método numérico de Newton-Raphson adaptado para MicroPython. Se utiliza principalmente para ajustar o encontrar el punto de equilibrio del     desplazador controlado por la ESP32, permitiendo corregir errores o determinar posiciones con mayor precisión.
+    En este archivo se implementa el método numérico de Newton-Raphson para calcular cuales son los duty cyles necesarios para barrer equidistantemente en el espacio de longitudes.
